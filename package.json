@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch ./src/server.ts",
     "start": "rimraf ./dist && npx tsc --build && node dist/server.js",
-    "start:build": "node --experimental-worker ./src/server.js"
+    "build": "node --experimental-worker ./src/server.js"
   },
   "keywords": [],
   "author": "",
