@@ -1,7 +1,7 @@
 const request = require('request-promise');
 const { createWorker } = require('tesseract.js');
 
-exports.getMoonPhase = async () => {
+const getMoonPhase = async () => {
     const today = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     const response = await request.post({
         method: 'POST',
@@ -47,6 +47,8 @@ const makeWorker = async(image) => {
     await worker.initialize('eng');
     const { data: { text } } = await worker.recognize(image);
     await worker.terminate();
-    console.log(`Finished Tesseract...`, text)
+    console.log(`Finished Tesseract...`, JSON.stringify(text, null, 2))
     return text;
 }
+
+module.exports.getMoonPhase = getMoonPhase;
