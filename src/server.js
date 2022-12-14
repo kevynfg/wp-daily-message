@@ -1,16 +1,11 @@
 const dotenv = require('dotenv');
 dotenv.config();
-const { z } = require('zod');
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require('qrcode-terminal');
 const { cronJob } = require("./routines/sendDailyMessage");
 const { getMoonPhase } = require("./services/getMoonPhase");
 
-const envSchema = z.object({
-    WP_CONTACT: z.string(),
-})
-
-const { WP_CONTACT } = envSchema.parse(process.env);
+const { WP_CONTACT } = process.env;
 
 const client = new Client({
     puppeteer: {
@@ -29,12 +24,7 @@ client.on('ready', async () => {
 });
 
 client.on('message', async (incomingMessage) => {
-    const messageSchema = z.object({
-        body: z.string(),
-        from: z.string(),
-    })
-
-    const { body: message, from } = messageSchema.parse(incomingMessage);
+    const { body: message, from } = incomingMessage;
     
     console.log('message body', message);
     console.log('message from', from);
