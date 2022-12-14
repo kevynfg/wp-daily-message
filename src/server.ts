@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Client, LocalAuth } from "whatsapp-web.js"
 import qrcode from 'qrcode-terminal';
 import { cronJob } from "./routines/sendDailyMessage";
+import { getMoonPhase } from "./services/getMoonPhase";
 
 const envSchema = z.object({
     WP_CONTACT: z.string(),
@@ -38,12 +39,14 @@ client.on('message', async (incomingMessage) => {
     console.log('message body', message);
     console.log('message from', from);
     
-    if (!message || from) return;
+    if (!message || !from) return;
 
-    if (String(from).includes(WP_CONTACT)) {
-        if (message?.includes("daily")) {
+    console.log('wp contact', WP_CONTACT);
+    if (String(from) === WP_CONTACT) {
+        if (message && message === "daily") {
             console.log('needs daily data');
-            await client.sendMessage(WP_CONTACT, "Mensagem do BOT: \nVou ver e te aviso")
+            const phase = await getMoonPhase();
+            await client.sendMessage(WP_CONTACT, `"Mensagem do BOT: \n${JSON.stringify(phase)}`)
         }
     }
 })
