@@ -37,9 +37,9 @@ client.on('message', async (incomingMessage) => {
             console.log('needs daily data');
             const phase = await getMoonPhase();
             await client.sendMessage(WP_CONTACT, `"Mensagem do BOT: \n${JSON.stringify(phase)}`)
-        }
-    }
-})
+        };
+    };
+});
 
 client.on('disconnected', () => {
     console.log('Whatsapp bot lost connection');
@@ -51,11 +51,10 @@ client.on('disconnected', () => {
     }
 });
 
-const sendMessage = async (message, isMoonPhase = false) => {
+const postMessage = async (message, isMoonPhase = false) => {
     await client.sendMessage(WP_CONTACT, `Mensagem do BOT: \n${isMoonPhase ? 'Fase da lua hoje: ' : null}${message}`)
-}
-
-module.exports = sendMessage
-
+};
 
 client.initialize();
+
+module.exports = postMessage;

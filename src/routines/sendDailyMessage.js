@@ -1,6 +1,6 @@
 const { CronJob } = require("cron");
 const { getMoonPhase } = require("../services/getMoonPhase");
-const sendMessage = require("../server");
+const postMessage = require("../server");
 
 exports.cronJob = new CronJob({
     cronTime: '* * * * *', 
@@ -9,7 +9,7 @@ exports.cronJob = new CronJob({
         console.log('Running Cron Job for daily message...')
         // await sendMessage("Teste cron job");
         const imageUrl = await getMoonPhase();
-        await sendMessage(imageUrl);
+        await postMessage(imageUrl);
         console.log('** Cron Job Finished **')
     }
 });
