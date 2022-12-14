@@ -1,4 +1,5 @@
 import { CronJob } from 'cron';
+import { getMoonPhase } from "../services/getMoonPhase";
 import { sendMessage } from "../server";
 
 export const cronJob = new CronJob({
@@ -7,6 +8,7 @@ export const cronJob = new CronJob({
     onTick: async () => {
         console.log('Running Cron Job for daily message...')
         await sendMessage("Teste cron job");
+        await getMoonPhase();
         console.log('** Cron Job Finished **')
     }
 });
