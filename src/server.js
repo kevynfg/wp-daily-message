@@ -39,19 +39,6 @@ client.on("qr", async (qr) => {
 
 client.on("ready", async () => {
     console.log("Client ready !");
-    // let arr = [
-    //     "linda",
-    //     "te amo",
-    //     "bora viver juntinho essa vida muito louca",
-    //     "olha como ela vai",
-    //     "uma deusa uma louca uma feiticeiraaa",
-    //     "better raba",
-    //     "boquinha deliciosa",
-    //     "marybrocolis",
-    //     "a mais bela",
-    // ];
-    // let random = Math.floor(Math.random() * (arr.length - 0) + 0);
-    // await client.sendMessage(WP_CONTACT, `Mensagem do BOT: \n ${arr[random]}`);
     cronJob.start();
 });
 
@@ -164,12 +151,11 @@ const postMessage = async (message, isMoonPhase = false) => {
     await client.sendMessage(WP_CONTACT, `Mensagem do BOT: \n${isMoonPhase ? "Fase da lua hoje: " : null}${message}`);
 };
 
-const cronJob = new CronJob("* * * * *", async function () {
+const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
-        // await sendMessage("Teste cron job");
         const {imageUrl, transcript} = await getMoonPhase();
-        await postMessage(imageUrl);
+        await postMessage(transcript);
         console.log("** Cron Job Finished **");
     } catch (error) {
         console.error(error);
