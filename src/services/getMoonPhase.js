@@ -35,18 +35,18 @@ exports.getMoonPhase = async () => {
     });
     const {data: { imageUrl }} = response;
     console.log('moon phase', imageUrl);
-    await makeWorker(imageUrl);
-    return imageUrl;
+    const transcript = await makeWorker(imageUrl);
+    return {imageUrl, transcript};
 };
 
 const makeWorker = async(image) => {
     const worker = await createWorker()
 
     console.log(`Starting Tesseract...`)
-    // await worker.load();
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
     const { data: { text } } = await worker.recognize(image);
     await worker.terminate();
     console.log(`Finished Tesseract...`, text)
+    return text;
 }

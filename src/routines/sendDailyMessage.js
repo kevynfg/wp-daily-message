@@ -1,6 +1,6 @@
 const { CronJob } = require("cron");
 const { getMoonPhase } = require("../services/getMoonPhase");
-const { sendMessage } = require("../server");
+const sendMessage = require("../server");
 
 exports.cronJob = new CronJob({
     cronTime: '* * * * *', 

@@ -51,12 +51,11 @@ client.on('disconnected', () => {
     }
 });
 
-exports.sendMessage = async (message, isMoonPhase = false) => {
+const sendMessage = async (message, isMoonPhase = false) => {
     await client.sendMessage(WP_CONTACT, `Mensagem do BOT: \n${isMoonPhase ? 'Fase da lua hoje: ' : null}${message}`)
 }
 
-// module.exports = {
-//     sendMessage
-// }
+module.exports = sendMessage
+
 
 client.initialize();
