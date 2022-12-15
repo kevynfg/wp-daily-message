@@ -170,4 +170,5 @@ app.use(express.static("public"));
 
 server.listen(PORT, () => {
     console.log(`Listening on *: ${PORT}`)
+    client.initialize();
 })
