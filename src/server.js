@@ -6,6 +6,11 @@ const { CronJob } = require("cron");
 const { getMoonPhase } = require("./services/getMoonPhase");
 const moment = require("moment");
 const { google } = require("googleapis");
+const express = require("express");
+const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const PORT = process.env.PORT || 3000;
 
 const { GOOGLE_JSON } = process.env;
 const parsedJson = JSON.parse(GOOGLE_JSON);
@@ -146,20 +151,23 @@ const transcriptMoonPhase = (phase) => {
     return phase.includes("Waxing") ? "Crescente" : "Minguante";
 };
 
-const postMessage = async (message, isMoonPhase = false) => {
-    console.log("client 2", WP_CONTACT);
-    await client.sendMessage(WP_CONTACT, `Mensagem do BOT: \n${isMoonPhase ? "Fase da lua hoje: " : null}${message}`);
+const sendWhatsappMessage = async (message, isMoonPhase = false) => {
+    await client.sendMessage(WP_CONTACT, `${isMoonPhase ? "Fase da lua hoje: " : `Mensagem do BOT: `}${message}`);
 };
 
 const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
         const {imageUrl, transcript} = await getMoonPhase();
-        await postMessage(transcript);
+        await sendWhatsappMessage(transcript);
         console.log("** Cron Job Finished **");
     } catch (error) {
         console.error(error);
     }
 });
 
-client.initialize();
+app.use(express.static("public"));
+
+server.listen(PORT, () => {
+    console.log(`Listening on *: ${PORT}`)
+})
