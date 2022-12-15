@@ -34,6 +34,7 @@ const { WP_CONTACT } = process.env;
 const client = new Client({
     puppeteer: {
         args: ["--no-sandbox"],
+        headless: true
     },
     authStrategy: new LocalAuth(),
 });
