@@ -152,7 +152,13 @@ const transcriptMoonPhase = (phase) => {
 };
 
 const sendWhatsappMessage = async (message, isMoonPhase = false) => {
-    await client.sendMessage(WP_CONTACT, `${isMoonPhase ? "Fase da lua hoje: " : `Mensagem do BOT: `}${message}`);
+    const [_, date, moonPhase] = message.split("\n");
+    const formatDate = moment(new Date(date), "DD/MM/YYYY").utc().locale("pt-br");
+    const fullDate = formatDate.format("DD [de] MMM [de] YYYY");
+    await client.sendMessage(
+        WP_CONTACT,
+        `_Fase da Lua_: \nData: *${fullDate}*, \nLua: *${transcriptMoonPhase(moonPhase)}*`
+    );
 };
 
 const cronJob = new CronJob("1 6 * * *", async function () {
