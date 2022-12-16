@@ -166,9 +166,10 @@ const cronJob = new CronJob("1 6 * * *", async function () {
     }
 });
 
-app.use(express.static("public"));
+client.initialize();
+// app.use(express.static("public"));
 
-server.listen(PORT, () => {
-    console.log(`Listening on *: ${PORT}`)
-    client.initialize();
-})
+// server.listen(PORT, () => {
+//     console.log(`Listening on *: ${PORT}`)
+    
+// })
