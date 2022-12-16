@@ -1,16 +1,12 @@
 const dotenv = require("dotenv");
 dotenv.config();
+
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { CronJob } = require("cron");
 const { getMoonPhase } = require("./services/getMoonPhase");
 const moment = require("moment");
 const { google } = require("googleapis");
-const express = require("express");
-const app = express();
-const http = require("http");
-const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
 
 const { GOOGLE_JSON } = process.env;
 const parsedJson = JSON.parse(GOOGLE_JSON);
@@ -43,7 +39,7 @@ client.on("qr", async (qr) => {
 });
 
 client.on("ready", async () => {
-    console.log("Client ready !");
+    console.log("Whatsapp Client ready...!!");
     cronJob.start();
 });
 
@@ -173,9 +169,3 @@ const cronJob = new CronJob("1 6 * * *", async function () {
 });
 
 client.initialize();
-// app.use(express.static("public"));
-
-// server.listen(PORT, () => {
-//     console.log(`Listening on *: ${PORT}`)
-    
-// })
