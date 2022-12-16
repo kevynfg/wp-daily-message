@@ -118,7 +118,7 @@ client.on("message", async (incomingMessage) => {
                                         .map((event) => {
                                             return `\nStatus: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
                                         })
-                                        .join("")}
+                                        .join(" ")}
                                     `
                                 );
                             }
