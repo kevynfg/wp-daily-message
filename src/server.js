@@ -4,7 +4,7 @@ dotenv.config();
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { CronJob } = require("cron");
-const { getMoonPhase } = require("./services/getMoonPhase");
+const { getMoonPhase } = require("./useCases/getMoonPhase");
 const moment = require("moment");
 const { google } = require("googleapis");
 
@@ -52,11 +52,12 @@ client.on("message", async (incomingMessage) => {
     
     if (!message || !from) return;
 
+    console.log('Message: ', message);
     if (String(from) === WP_CONTACT) {
         if (message && message === "daily") {
-            const { transcript } = await getMoonPhase();
+            const { transcript = "" } = await getMoonPhase();
             const [_, date, moonPhase] = transcript.split("\n");
-            const formatDate = moment(new Date(date), "DD/MM/YYYY").utc().locale("pt-br");
+            const formatDate = moment(new Date(date ?? Date.now()), "DD/MM/YYYY").utc().locale("pt-br");
             const fullDate = formatDate.format("DD [de] MMM [de] YYYY");
 
             calendar.events.list(
@@ -125,10 +126,12 @@ client.on("message", async (incomingMessage) => {
                 }
             );
 
-            await client.sendMessage(
-                WP_CONTACT,
-                `_Fase da Lua_: \nData: *${fullDate}*, \nLua: *${transcriptMoonPhase(moonPhase)}*`
-            );
+            if (moonPhase) {
+                await client.sendMessage(
+                    WP_CONTACT,
+                    `_Fase da Lua_: \nData: *${fullDate}*, \nLua: *${transcriptMoonPhase(moonPhase)}*`
+                );
+            }
         }
     }
 });
@@ -140,6 +143,7 @@ client.on("disconnected", () => {
         client.initialize();
     } catch (error) {
         console.error(error);
+        console.log("Bot died... :(");
     }
 });
 
@@ -160,9 +164,13 @@ const sendWhatsappMessage = async (message, isMoonPhase = false) => {
 const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
-        const {imageUrl, transcript} = await getMoonPhase();
-        await sendWhatsappMessage(transcript);
-        console.log("** Cron Job Finished **");
+        const transcriptedMoonPhaseImage = await getMoonPhase();
+        let cronJobMessage = 'failed';
+        if (transcriptedMoonPhaseImage) {
+            await sendWhatsappMessage(transcriptedMoonPhaseImage);
+            cronJobMessage = 'success';
+        }
+        console.log(`** Cron Job Finished with ${cronJobMessage} **`);
     } catch (error) {
         console.error(error);
     }
