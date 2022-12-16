@@ -2,7 +2,7 @@ const request = require('request-promise');
 const { createWorker } = require('tesseract.js');
 
 const getMoonPhase = async () => {
-    const today = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const today = new Date(Date.now()).toISOString().slice(0, 10);
     const response = await request.post({
         method: 'POST',
         uri: `${process.env.ASTRONOMY_API_URL}`,
@@ -34,7 +34,6 @@ const getMoonPhase = async () => {
         json: true
     });
     const {data: { imageUrl }} = response;
-    console.log('moon phase', imageUrl);
     const transcript = await makeWorker(imageUrl);
     return {imageUrl, transcript};
 };
@@ -47,7 +46,7 @@ const makeWorker = async(image) => {
     await worker.initialize('eng');
     const { data: { text } } = await worker.recognize(image);
     await worker.terminate();
-    console.log(`Finished Tesseract...`, JSON.stringify(text, null, 2))
+    console.log(`Finished Tesseract...`);
     return text;
 }
 

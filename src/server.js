@@ -113,12 +113,12 @@ client.on("message", async (incomingMessage) => {
                             if (calendarEvents && calendarEvents.length > 0) {
                                 await client.sendMessage(
                                     WP_CONTACT,
-                                    `_Eventos do Dia_: \n
+                                    `_Eventos do Dia_:
                                     ${calendarEvents
                                         .map((event) => {
-                                            return `Status: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
+                                            return `\nStatus: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
                                         })
-                                        .join("\n")}
+                                        .join("")}
                                     `
                                 );
                             }
