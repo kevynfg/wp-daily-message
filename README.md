@@ -3,7 +3,6 @@ Using whatsapp package to listen for daily message on a specific number to reply
 
 ## 💻 Before you install:
 
-Antes de começar, verifique se você atendeu aos seguintes requisitos:
 <!---Estes são apenas requisitos de exemplo. Adicionar, duplicar ou remover conforme necessário--->
 * Install node 16.x
 * Fill your .env file with the credentials from .env.example
@@ -24,6 +23,6 @@ Set the message and API integration that you want, seriously, you can set anythi
 
 ## 📝 Credits to
 
-This project was based and using [Original Github Repository](https://github.com/pedroslopez/whatsapp-web.js) for more details.
+This project was based and using [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js) for more details.
 
 [⬆ Voltar ao topo](#wp-daily-message)<br>
