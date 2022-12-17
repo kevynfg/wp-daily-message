@@ -60,71 +60,7 @@ client.on("message", async (incomingMessage) => {
             const formatDate = moment(new Date(date ?? Date.now()), "DD/MM/YYYY").utc().locale("pt-br");
             const fullDate = formatDate.format("DD [de] MMM [de] YYYY");
 
-            calendar.events.list(
-                {
-                    calendarId: GOOGLE_CALENDAR_ID,
-                    timeMin: new Date().toISOString(),
-                    maxResults: 10,
-                    singleEvents: true,
-                    orderBy: "startTime",
-                },
-                async (error, result) => {
-                    if (error) {
-                        console.log(JSON.stringify({ error: error }));
-                    } else {
-                        let calendarEvents = [];
-                        if (result.data.items.length) {
-                            for (const event of result.data.items) {
-                                const {
-                                    status,
-                                    created,
-                                    summary,
-                                    start = event.start.date || event.start.dateTime,
-                                    end = event.end.date || event.end.dateTime,
-                                    hangoutLink = null,
-                                } = event;
-        
-                                const validatedDate = start.dateTime ? start.dateTime : start.date;
-        
-                                if (
-                                    validatedDate &&
-                                    moment(checkForDifferentDates(validatedDate)).isSame(new Date().toISOString().slice(0, 10))
-                                ) {
-                                    calendarEvents.push({
-                                        status: status.includes("confirmed") ? "Confirmado" : status,
-                                        created: created
-                                            ? moment(checkForDifferentDates(created)).utc().format("DD/MM/YYYY")
-                                            : "Sem data de criação",
-                                        summary,
-                                        start: validatedDate
-                                            ? moment(checkForDifferentDates(validatedDate)).utc().format("DD/MM/YYYY")
-                                            : "Sem data de Início",
-                                        end: end
-                                            ? moment(checkForDifferentDates(end)).utc().format("DD/MM/YYYY")
-                                            : "Sem data fim",
-                                        link: hangoutLink || "Sem link do meet",
-                                    });
-                                }
-                            }
-        
-                            if (calendarEvents && calendarEvents.length > 0) {
-                                await client.sendMessage(
-                                    WP_CONTACT,
-                                    `_Eventos do Dia_:
-                                    ${calendarEvents
-                                        .map((event) => {
-                                            return `\nStatus: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
-                                        })
-                                        .join(" ")}
-                                    `
-                                );
-                            }
-                        } else {
-                            console.log(JSON.stringify({ message: "No upcoming events found." }));
-                        }
-                    }
-                }
-            );
+            
 
             if (moonPhase) {
                 await client.sendMessage(
@@ -161,16 +97,91 @@ const sendWhatsappMessage = async (message, isMoonPhase = false) => {
     );
 };
 
+const fetchDailyCalendarEvent = () => {
+    calendar.events.list(
+        {
+            calendarId: GOOGLE_CALENDAR_ID,
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: "startTime",
+        },
+        async (error, result) => {
+            if (error) {
+                console.log(JSON.stringify({ error: error }));
+            } else {
+                let calendarEvents = [];
+                if (result.data.items.length) {
+                    for (const event of result.data.items) {
+                        const {
+                            status,
+                            created,
+                            summary,
+                            start = event.start.date || event.start.dateTime,
+                            end = event.end.date || event.end.dateTime,
+                            hangoutLink = null,
+                        } = event;
+
+                        const validatedDate = start.dateTime ? start.dateTime : start.date;
+
+                        if (
+                            validatedDate &&
+                            moment(checkForDifferentDates(validatedDate)).isSame(new Date().toISOString().slice(0, 10))
+                        ) {
+                            calendarEvents.push({
+                                status: status.includes("confirmed") ? "Confirmado" : status,
+                                created: created
+                                    ? moment(checkForDifferentDates(created)).utc().format("DD/MM/YYYY")
+                                    : "Sem data de criação",
+                                summary,
+                                start: validatedDate
+                                    ? moment(checkForDifferentDates(validatedDate)).utc().format("DD/MM/YYYY")
+                                    : "Sem data de Início",
+                                end: end
+                                    ? moment(checkForDifferentDates(end)).utc().format("DD/MM/YYYY")
+                                    : "Sem data fim",
+                                link: hangoutLink || "Sem link do meet",
+                            });
+                        }
+                    }
+
+                    if (calendarEvents && calendarEvents.length > 0) {
+                        await client.sendMessage(
+                            WP_CONTACT,
+                            `_Eventos do Dia_:
+                            ${calendarEvents
+                                .map((event) => {
+                                    return `\nStatus: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
+                                })
+                                .join(" ")}
+                            `
+                        );
+                    }
+                } else {
+                    console.log(JSON.stringify({ message: "No upcoming events found." }));
+                }
+            }
+        }
+    );
+}
+
 const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
         const transcriptedMoonPhaseImage = await getMoonPhase();
-        let cronJobMessage = 'failed';
+        let moonPhaseCronJob = 'moon phase failed';
+        let calendarEventCronJob = 'calendar fetch failed';
         if (transcriptedMoonPhaseImage) {
             await sendWhatsappMessage(transcriptedMoonPhaseImage);
-            cronJobMessage = 'success';
+            moonPhaseCronJob = 'moon phase had success';
         }
-        console.log(`** Cron Job Finished with ${cronJobMessage} **`);
+        try {
+            fetchDailyCalendarEvent();
+            calendarEventCronJob = 'calendar fetch succeeded';
+        } catch (error) {
+            console.error('Calendar fetch event failed', error);
+        }
+        console.log(`** Cron Job Finished for services: ${moonPhaseCronJob},  ${calendarEventCronJob}**`);
     } catch (error) {
         console.error(error);
     }
