@@ -97,7 +97,7 @@ const sendWhatsappMessage = async (message, isMoonPhase = false) => {
     );
 };
 
-const fetchDailyCalendarEvent = () => {
+const fetchDailyCalendarEvent = async () => {
     calendar.events.list(
         {
             calendarId: GOOGLE_CALENDAR_ID,
@@ -176,7 +176,7 @@ const cronJob = new CronJob("1 6 * * *", async function () {
             moonPhaseCronJob = 'moon phase had success';
         }
         try {
-            fetchDailyCalendarEvent();
+            await fetchDailyCalendarEvent();
             calendarEventCronJob = 'calendar fetch succeeded';
         } catch (error) {
             console.error('Calendar fetch event failed', error);
