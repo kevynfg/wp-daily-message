@@ -151,7 +151,7 @@ const fetchDailyCalendarEvent = async () => {
                             `_Eventos do Dia_:
                             ${calendarEvents
                                 .map((event) => {
-                                    return `\nStatus: *${event.status}*, Criado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*, Fim: *${event.end}*, Link HangOut: *${event.link}*`;
+                                    return `\nCriado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*${event.end ?", Fim: *"+event.end+"*" : null}, Link HangOut: *${event.link}*`;
                                 })
                                 .join(" ")}
                             `
@@ -168,13 +168,13 @@ const fetchDailyCalendarEvent = async () => {
 const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
-        const transcriptedMoonPhaseImage = await getMoonPhase();
-        let moonPhaseCronJob = 'moon phase failed';
+        // const transcriptedMoonPhaseImage = await getMoonPhase();
+        // let moonPhaseCronJob = 'moon phase failed';
         let calendarEventCronJob = 'calendar fetch failed';
-        if (transcriptedMoonPhaseImage) {
-            await sendWhatsappMessage(transcriptedMoonPhaseImage);
-            moonPhaseCronJob = 'moon phase had success';
-        }
+        // if (transcriptedMoonPhaseImage) {
+        //     await sendWhatsappMessage(transcriptedMoonPhaseImage);
+        //     moonPhaseCronJob = 'moon phase had success';
+        // }
         try {
             await fetchDailyCalendarEvent();
             calendarEventCronJob = 'calendar fetch succeeded';
