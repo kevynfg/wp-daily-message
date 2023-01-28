@@ -1,10 +1,9 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { Client, LocalAuth } = require("whatsapp-web.js");
+const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { CronJob } = require("cron");
-const { getMoonPhase } = require("./useCases/getMoonPhase");
 const { getWeather } = require("./useCases/weather");
 const moment = require("moment");
 const { google } = require("googleapis");
@@ -74,6 +73,46 @@ client.on("message", async (incomingMessage) => {
         }
     }
 });
+
+client.on("message_create", async (incomingMessage) => {
+    const { body: message, from } = incomingMessage;
+
+    if (!message || !from) return;
+
+    console.log('incomingMessage', incomingMessage);
+    if (String(from) === WP_CONTACT) {
+        const msgCommand = message.substring(0, message.indexOf(" "));
+
+        if (msgCommand && msgCommand === "/sticker") {
+            const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
+            await generateSticker(incomingMessage, sender);
+        }
+    }
+})
+
+const generateSticker = async (message, sender) => {
+    if (message.type === 'image') {
+        try {
+            const { data } = await message.downloadMedia();
+            const image = new MessageMedia("image/jpeg", data, "image/jpg");
+            await client.sendMessage(sender, image, {sendMediaAsSticker});
+        } catch (error) {
+            console.error("Deu ruim em processar essa imagem enviada");
+            message.reply("Erro ao processar seu arquivo, D:")
+        }
+    } else {
+        try {
+            const url = msg.body.substring(msg.body.indexOf(" ")).trim()
+            const { data } = await axios.get(url, {responseType: 'arraybuffer'})
+            const returnedB64 = Buffer.from(data).toString('base64');
+            const image = new MessageMedia("image/jpeg", returnedB64, "image.jpg")
+            await client.sendMessage(sender, image, { sendMediaAsSticker: true })
+        } catch (error) {
+            console.error("Deu ruim em processar essa imagem enviada pela URL");
+            message.reply("Erro ao processar seu arquivo, verifique a URL enviada:")
+        }
+    }
+};
 
 client.on("disconnected", () => {
     console.log("Whatsapp bot lost connection");
