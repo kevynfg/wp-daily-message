@@ -67,8 +67,9 @@ client.on("message", async (incomingMessage) => {
         if (message) {
             const msgCommand = message.substring(0, message.indexOf(" "));
             if (msgCommand && msgCommand === iaCommands.davinci3) {
-                const gptContent = await getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" ")));
-                await client.sendMessage(WP_CONTACT, gptContent);
+                getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then((response) => {
+                    client.sendMessage(incomingMessage.from === WP_CONTACT ? incomingMessage.to : incomingMessage.from, response);
+                });
             };
         }
     }
