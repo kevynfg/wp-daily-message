@@ -234,7 +234,7 @@ const getDavinciResponse = async (clientText) => {
     }
 }
 
-const cronJob = new CronJob("* * * * *", async function () {
+const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
         let calendarEventCronJob = 'calendar fetch failed';
