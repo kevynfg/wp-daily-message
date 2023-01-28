@@ -113,16 +113,9 @@ const fetchDailyCalendarEvent = async () => {
                 let calendarEvents = [];
                 if (result.data.items.length) {
                     for (const event of result.data.items) {
-                        const {
-                            status,
-                            created,
-                            summary,
-                            start = event.start.date || event.start.dateTime,
-                            end = event.end.date || event.end.dateTime,
-                            hangoutLink = null,
-                        } = event;
-
-                        const validatedDate = start.dateTime ? start.dateTime : start.date;
+                        
+                        const { status, created, summary, start = event.start.date || event.start.dateTime, end = event.end.date || event.end.dateTime, hangoutLink = null } = event;
+                        const validatedDate = eventData.start.dateTime ? eventData.start.dateTime : start.date;
 
                         if (
                             validatedDate &&
@@ -168,20 +161,14 @@ const fetchDailyCalendarEvent = async () => {
 const cronJob = new CronJob("1 6 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
-        // const transcriptedMoonPhaseImage = await getMoonPhase();
-        // let moonPhaseCronJob = 'moon phase failed';
         let calendarEventCronJob = 'calendar fetch failed';
-        // if (transcriptedMoonPhaseImage) {
-        //     await sendWhatsappMessage(transcriptedMoonPhaseImage);
-        //     moonPhaseCronJob = 'moon phase had success';
-        // }
         try {
             await fetchDailyCalendarEvent();
             calendarEventCronJob = 'calendar fetch succeeded';
         } catch (error) {
             console.error('Calendar fetch event failed', error);
         }
-        console.log(`** Cron Job Finished for services: ${moonPhaseCronJob},  ${calendarEventCronJob}**`);
+        console.log(`** Cron Job Finished for services: ${calendarEventCronJob}**`);
     } catch (error) {
         console.error(error);
     }
