@@ -33,7 +33,7 @@ const calendar = google.calendar({
     auth: jwtClient,
 });
 
-const { WP_CONTACT } = process.env;
+const { WP_CONTACT, GROUP_ID } = process.env;
 
 const client = new Client({
     puppeteer: {
@@ -83,7 +83,7 @@ client.on("message_create", async (incomingMessage) => {
     if (String(from) === WP_CONTACT) {
         const msgCommand = message.substring(0, message.indexOf(" "));
 
-        if (msgCommand && msgCommand === "/sticker") {
+        if (msgCommand && msgCommand === "/sticker" && incomingMessage.id.id.includes(GROUP_ID)) {
             const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
             await generateSticker(incomingMessage, sender);
         }
