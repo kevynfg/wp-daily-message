@@ -79,7 +79,6 @@ client.on("message_create", async (incomingMessage) => {
 
     if (!message || !from) return;
 
-    console.log('incomingMessage', incomingMessage);
     if (String(from) === WP_CONTACT) {
         const msgCommand = message.substring(0, message.indexOf(" "));
 
