@@ -5,8 +5,17 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { CronJob } = require("cron");
 const { getMoonPhase } = require("./useCases/getMoonPhase");
+const { getWeather } = require("./useCases/weather");
 const moment = require("moment");
 const { google } = require("googleapis");
+const { Configuration, OpenAIApi } = require('openai');
+
+const configuration = new Configuration({
+    organization: process.env.ORGANIZATION_ID,
+    apiKey: process.env.OPENAI_KEY,
+});
+
+const openai = new Client(configuration);
 
 const { GOOGLE_JSON } = process.env;
 const parsedJson = JSON.parse(GOOGLE_JSON);
@@ -49,25 +58,19 @@ const checkForDifferentDates = (date) => {
 
 client.on("message", async (incomingMessage) => {
     const { body: message, from } = incomingMessage;
-    
+    const iaCommands = {
+        davinci3: "/bot",
+    };
     if (!message || !from) return;
 
-    console.log('Message: ', message);
+    console.log('Message: ',message);
     if (String(from) === WP_CONTACT) {
-        if (message && message === "daily") {
-            const { transcript = "" } = await getMoonPhase();
-            const [_, date, moonPhase] = transcript.split("\n");
-            const formatDate = moment(new Date(date ?? Date.now()), "DD/MM/YYYY").utc().locale("pt-br");
-            const fullDate = formatDate.format("DD [de] MMM [de] YYYY");
-
-            
-
-            if (moonPhase) {
-                await client.sendMessage(
-                    WP_CONTACT,
-                    `_Fase da Lua_: \nData: *${fullDate}*, \nLua: *${transcriptMoonPhase(moonPhase)}*`
-                );
-            }
+        if (message) {
+            const msgCommand = message.substring(0, message.indexOf(" "));
+            if (msgCommand && msgCommand === iaCommands.davinci3) {
+                const gptContent = await getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" ")));
+                await client.sendMessage(WP_CONTACT, gptContent);
+            };
         }
     }
 });
@@ -111,11 +114,11 @@ const fetchDailyCalendarEvent = async () => {
                 console.log(JSON.stringify({ error: error }));
             } else {
                 let calendarEvents = [];
-                if (result.data.items.length) {
+                if (result.data.items && result.data.items.length) {
                     for (const event of result.data.items) {
                         
                         const { status, created, summary, start = event.start.date || event.start.dateTime, end = event.end.date || event.end.dateTime, hangoutLink = null } = event;
-                        const validatedDate = eventData.start.dateTime ? eventData.start.dateTime : start.date;
+                        const validatedDate = start.dateTime ? start.dateTime : start.date;
 
                         if (
                             validatedDate &&
@@ -144,7 +147,7 @@ const fetchDailyCalendarEvent = async () => {
                             `_Eventos do Dia_:
                             ${calendarEvents
                                 .map((event) => {
-                                    return `\nCriado em: *${event.created}*, Descrição: *${event.summary}*, Início: *${event.start}*${event.end ?", Fim: *"+event.end+"*" : null}, Link HangOut: *${event.link}*`;
+                                    return `\n\nCriado em: *${event.created}*, \n\nDescrição: *${event.summary}*, \n\nInício: *${event.start}*${event.end ?", \n\nFim: *"+event.end+"*" : null}, \n\nLink HangOut: *${event.link}*`;
                                 })
                                 .join(" ")}
                             `
@@ -158,17 +161,60 @@ const fetchDailyCalendarEvent = async () => {
     );
 }
 
-const cronJob = new CronJob("1 6 * * *", async function () {
+const fetchDailyForecast = async () => {
+    const forecast = await getWeather();
+    if (forecast) {
+        await client.sendMessage(
+            WP_CONTACT,
+            `_Previsão do Tempo de Hoje_:
+            ${
+            `\nDia: *${moment(forecast.date).format("DD/MM/YYYY")}*, \n\nMáxima: *${forecast.day.maxtemp} Cº*, \n\nMínima: *${forecast.day.mintemp} Cº*, \n\nCondição: *${forecast.day.condition}*`
+             }
+            `
+        );
+    }
+}
+
+const getDavinciResponse = async (clientText) => {
+    const options = {
+        model: "text-davinci-003", // Modelo GPT a ser usado
+        prompt: clientText, // Texto enviado pelo usuário
+        temperature: 1, // Nível de variação das respostas geradas, 1 é o máximo
+        max_tokens: 4000 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
+    }
+
+    try {
+        const response = await openai.createCompletion(options)
+        let botResponse = ""
+        response.data.choices.forEach(({ text }) => {
+            botResponse += text
+        })
+        return `Chat GPT:\n\n ${botResponse.trim()}`
+    } catch (error) {
+        return `OpenAI Response Error: ${error.response.data.error.message}`
+    }
+}
+
+const cronJob = new CronJob("* * * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
         let calendarEventCronJob = 'calendar fetch failed';
+        let weatherApiCronJob = 'weather failed to fetch';
         try {
             await fetchDailyCalendarEvent();
             calendarEventCronJob = 'calendar fetch succeeded';
         } catch (error) {
             console.error('Calendar fetch event failed', error);
         }
-        console.log(`** Cron Job Finished for services: ${calendarEventCronJob}**`);
+
+        try {
+            await fetchDailyForecast();
+            weatherApiCronJob = "weather api fetched with success"
+        } catch (error) {
+            console.error('Failed to fetch Daily Weather', error)
+        }
+
+        console.log(`** Cron Job Finished for services: ${weatherApiCronJob}, ${calendarEventCronJob}**`);
     } catch (error) {
         console.error(error);
     }
