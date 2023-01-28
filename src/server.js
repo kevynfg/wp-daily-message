@@ -14,7 +14,7 @@ const configuration = new Configuration({
     apiKey: process.env.OPENAI_KEY,
 });
 
-const openai = new Client(configuration);
+const openai = new OpenAIApi(configuration);
 
 const { GOOGLE_JSON } = process.env;
 const parsedJson = JSON.parse(GOOGLE_JSON);
@@ -79,13 +79,10 @@ client.on("message_create", async (incomingMessage) => {
 
     if (!message || !from) return;
 
-    if (String(from) === WP_CONTACT) {
-        const msgCommand = message.substring(0, message.indexOf(" "));
-
-        if (msgCommand && msgCommand === "/sticker" && incomingMessage.id.id.includes(GROUP_ID)) {
-            const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
-            await generateSticker(incomingMessage, sender);
-        }
+    const msgCommand = message;
+    if (msgCommand && msgCommand === "/sticker" && incomingMessage.id.remote.includes(GROUP_ID)) {
+        const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
+        generateSticker(incomingMessage, sender);
     }
 })
 
@@ -93,7 +90,7 @@ const generateSticker = async (message, sender) => {
     if (message.type === 'image') {
         try {
             const { data } = await message.downloadMedia();
-            const image = new MessageMedia("image/jpeg", data, "image/jpg");
+            const image = await new MessageMedia("image/jpeg", data, "image/jpg");
             await client.sendMessage(sender, image, {sendMediaAsSticker});
         } catch (error) {
             console.error("Deu ruim em processar essa imagem enviada");
@@ -104,7 +101,7 @@ const generateSticker = async (message, sender) => {
             const url = msg.body.substring(msg.body.indexOf(" ")).trim()
             const { data } = await axios.get(url, {responseType: 'arraybuffer'})
             const returnedB64 = Buffer.from(data).toString('base64');
-            const image = new MessageMedia("image/jpeg", returnedB64, "image.jpg")
+            const image = await new MessageMedia("image/jpeg", returnedB64, "image.jpg")
             await client.sendMessage(sender, image, { sendMediaAsSticker: true })
         } catch (error) {
             console.error("Deu ruim em processar essa imagem enviada pela URL");
