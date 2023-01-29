@@ -65,12 +65,16 @@ client.on("message", async (incomingMessage) => {
     console.log('Message: ',message);
     if (String(from) === WP_CONTACT) {
         if (message) {
-            const msgCommand = message.substring(0, message.indexOf(" "));
-            if (msgCommand && msgCommand === iaCommands.davinci3) {
-                getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then((response) => {
-                    client.sendMessage(incomingMessage.from === WP_CONTACT ? incomingMessage.to : incomingMessage.from, response);
-                });
-            };
+            try {
+                const msgCommand = message.substring(0, message.indexOf(" "));
+                if (msgCommand && msgCommand === iaCommands.davinci3) {
+                    getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then((response) => {
+                        client.sendMessage(incomingMessage.from === WP_CONTACT ? incomingMessage.to : incomingMessage.from, response);
+                    });
+                };
+            } catch (error) {
+                console.error('Open ai erro', error)
+            }
         }
     }
 });
