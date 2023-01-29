@@ -68,8 +68,8 @@ client.on("message", async (incomingMessage) => {
             try {
                 const msgCommand = message.substring(0, message.indexOf(" "));
                 if (msgCommand && msgCommand === iaCommands.davinci3) {
-                    getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then((response) => {
-                        client.sendMessage(incomingMessage.from === WP_CONTACT ? incomingMessage.to : incomingMessage.from, response);
+                    getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then(async (response) => {
+                        await client.sendMessage(WP_CONTACT, response);
                     });
                 };
             } catch (error) {
