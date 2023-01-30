@@ -63,21 +63,20 @@ client.on("message", async (incomingMessage) => {
     if (!message || !from) return;
 
     console.log('Message: ',message);
-    // if (String(from) === WP_CONTACT) {
+    if (String(from) === WP_CONTACT) {
         if (message) {
             try {
-                const isMe = incomingMessage.from.includes(WP_CONTACT);
                 const msgCommand = message.substring(0, message.indexOf(" ")).trim();
                 if (msgCommand && msgCommand === iaCommands.davinci3) {
                     getDavinciResponse(message.substring(message.indexOf(" ")).trim()).then(async (response) => {
-                        await client.sendMessage(isMe ? incomingMessage.to : incomingMessage.from, response);
+                        await client.sendMessage(WP_CONTACT, response);
                     });
                 };
             } catch (error) {
                 console.error('Open ai erro', error)
             }
         }
-    // }
+    }
 });
 
 client.on("message_create", async (incomingMessage) => {
