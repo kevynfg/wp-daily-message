@@ -91,7 +91,7 @@ client.on("message_create", async (incomingMessage) => {
             try {
                 const { data } = await incomingMessage.downloadMedia();
                 const image = new MessageMedia("image/jpeg", data, "image/jpg");
-                await client.sendMessage(sender, image, {sendMediaAsSticker});
+                await client.sendMessage(sender, image, {sendMediaAsSticker: true});
             } catch (error) {
                 console.error("Deu ruim em processar essa imagem enviada", error);
                 incomingMessage.reply("Erro ao processar seu arquivo, D:")
