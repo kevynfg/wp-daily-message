@@ -59,6 +59,7 @@ client.on("message", async (incomingMessage) => {
     const { body: message, from } = incomingMessage;
     const iaCommands = {
         davinci3: "/bot",
+        dallE: "/generate"
     };
     if (!message || !from) return;
 
@@ -71,7 +72,11 @@ client.on("message", async (incomingMessage) => {
                     getDavinciResponse(message.substring(message.indexOf(" ")).trim()).then(async (response) => {
                         await client.sendMessage(WP_CONTACT, response);
                     });
-                };
+                } else if (msgCommand && msgCommand === iaCommands.dallE) {
+                    getDallEImage(message.substring(message.indexOf(" ")).trim()).then(async (response) => {
+                        await client.sendMessage(WP_CONTACT, response)
+                    })
+                }
             } catch (error) {
                 console.error('Open ai erro', error)
             }
@@ -226,6 +231,23 @@ const getDavinciResponse = async (clientText) => {
             botResponse += text
         })
         return `Chat GPT:\n\n ${botResponse.trim()}`
+    } catch (error) {
+        return `OpenAI Response Error: ${error.response.data.error.message}`
+    }
+}
+
+const getDallEImage = async (clientText) => {
+    const options = {
+        model: "text-davinci-003", // Modelo GPT a ser usado
+        prompt: clientText, // Texto enviado pelo usuário
+        temperature: 1, // Nível de variação das respostas geradas, 1 é o máximo
+        max_tokens: 1000 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
+    }
+
+    try {
+        const {data} = await openai.createImage(options);
+        const botResponse = data.data[0].url || "Não foi possível gerar a imagem";
+        return `Chat GPT:\n\n ${botResponse}`
     } catch (error) {
         return `OpenAI Response Error: ${error.response.data.error.message}`
     }
