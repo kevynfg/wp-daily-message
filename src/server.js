@@ -93,7 +93,7 @@ client.on("message_create", async (incomingMessage) => {
                 const image = new MessageMedia("image/jpeg", data, "image/jpg");
                 await client.sendMessage(sender, image, {sendMediaAsSticker});
             } catch (error) {
-                console.error("Deu ruim em processar essa imagem enviada");
+                console.error("Deu ruim em processar essa imagem enviada", error);
                 incomingMessage.reply("Erro ao processar seu arquivo, D:")
             }
         } else {
