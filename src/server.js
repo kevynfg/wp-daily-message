@@ -86,11 +86,11 @@ client.on("message_create", async (incomingMessage) => {
 
     const msgCommand = message;
     if (msgCommand && msgCommand === "/sticker" && incomingMessage.id.remote.includes(GROUP_ID)) {
-        const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
+        const sender = incomingMessage.from.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
         if (incomingMessage.type === 'image') {
             try {
                 const { data } = await incomingMessage.downloadMedia();
-                const image = await new MessageMedia("image/jpeg", data, "image/jpg");
+                const image = await new MessageMedia("image/jpeg", data);
                 await client.sendMessage(sender, image, {sendMediaAsSticker: true});
             } catch (error) {
                 console.error("Deu ruim em processar essa imagem enviada", error);
@@ -215,8 +215,8 @@ const getDavinciResponse = async (clientText) => {
     const options = {
         model: "text-davinci-003", // Modelo GPT a ser usado
         prompt: clientText, // Texto enviado pelo usuário
-        temperature: 0.7, // Nível de variação das respostas geradas, 1 é o máximo
-        max_tokens: 400 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
+        temperature: 1, // Nível de variação das respostas geradas, 1 é o máximo
+        max_tokens: 1000 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
     }
 
     try {
