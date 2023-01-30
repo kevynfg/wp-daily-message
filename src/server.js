@@ -215,8 +215,8 @@ const getDavinciResponse = async (clientText) => {
     const options = {
         model: "text-davinci-003", // Modelo GPT a ser usado
         prompt: clientText, // Texto enviado pelo usuário
-        temperature: 0.5, // Nível de variação das respostas geradas, 1 é o máximo
-        max_tokens: 200 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
+        temperature: 0.7, // Nível de variação das respostas geradas, 1 é o máximo
+        max_tokens: 400 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
     }
 
     try {
