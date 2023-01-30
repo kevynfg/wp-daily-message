@@ -66,9 +66,9 @@ client.on("message", async (incomingMessage) => {
     if (String(from) === WP_CONTACT) {
         if (message) {
             try {
-                const msgCommand = message.substring(0, message.indexOf(" "));
+                const msgCommand = message.substring(0, message.indexOf(" ")).trim();
                 if (msgCommand && msgCommand === iaCommands.davinci3) {
-                    getDavinciResponse(msgCommand.substring(msgCommand.indexOf(" "))).then(async (response) => {
+                    getDavinciResponse(message.substring(message.indexOf(" ")).trim()).then(async (response) => {
                         await client.sendMessage(WP_CONTACT, response);
                     });
                 };
@@ -87,33 +87,29 @@ client.on("message_create", async (incomingMessage) => {
     const msgCommand = message;
     if (msgCommand && msgCommand === "/sticker" && incomingMessage.id.remote.includes(GROUP_ID)) {
         const sender = message.includes(WP_CONTACT) ? incomingMessage.to : incomingMessage.from;
-        generateSticker(incomingMessage, sender);
+        if (incomingMessage.type === 'image') {
+            try {
+                const { data } = await incomingMessage.downloadMedia();
+                const image = new MessageMedia("image/jpeg", data, "image/jpg");
+                await client.sendMessage(sender, image, {sendMediaAsSticker});
+            } catch (error) {
+                console.error("Deu ruim em processar essa imagem enviada");
+                incomingMessage.reply("Erro ao processar seu arquivo, D:")
+            }
+        } else {
+            try {
+                const url = msg.body.substring(msg.body.indexOf(" ")).trim()
+                const { data } = await axios.get(url, {responseType: 'arraybuffer'})
+                const returnedB64 = Buffer.from(data).toString('base64');
+                const image = new MessageMedia("image/jpeg", returnedB64, "image.jpg")
+                await client.sendMessage(sender, image, { sendMediaAsSticker: true })
+            } catch (error) {
+                console.error("Deu ruim em processar essa imagem enviada pela URL");
+                incomingMessage.reply("Erro ao processar seu arquivo, verifique a URL enviada:")
+            }
+        }
     }
 })
-
-const generateSticker = async (message, sender) => {
-    if (message.type === 'image') {
-        try {
-            const { data } = await message.downloadMedia();
-            const image = await new MessageMedia("image/jpeg", data, "image/jpg");
-            await client.sendMessage(sender, image, {sendMediaAsSticker});
-        } catch (error) {
-            console.error("Deu ruim em processar essa imagem enviada");
-            message.reply("Erro ao processar seu arquivo, D:")
-        }
-    } else {
-        try {
-            const url = msg.body.substring(msg.body.indexOf(" ")).trim()
-            const { data } = await axios.get(url, {responseType: 'arraybuffer'})
-            const returnedB64 = Buffer.from(data).toString('base64');
-            const image = await new MessageMedia("image/jpeg", returnedB64, "image.jpg")
-            await client.sendMessage(sender, image, { sendMediaAsSticker: true })
-        } catch (error) {
-            console.error("Deu ruim em processar essa imagem enviada pela URL");
-            message.reply("Erro ao processar seu arquivo, verifique a URL enviada:")
-        }
-    }
-};
 
 client.on("disconnected", () => {
     console.log("Whatsapp bot lost connection");
@@ -219,12 +215,12 @@ const getDavinciResponse = async (clientText) => {
     const options = {
         model: "text-davinci-003", // Modelo GPT a ser usado
         prompt: clientText, // Texto enviado pelo usuário
-        temperature: 1, // Nível de variação das respostas geradas, 1 é o máximo
-        max_tokens: 4000 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
+        temperature: 0.5, // Nível de variação das respostas geradas, 1 é o máximo
+        max_tokens: 200 // Quantidade de tokens (palavras) a serem retornadas pelo bot, 4000 é o máximo
     }
 
     try {
-        const response = await openai.createCompletion(options)
+        const response = await openai.createCompletion(options);
         let botResponse = ""
         response.data.choices.forEach(({ text }) => {
             botResponse += text
