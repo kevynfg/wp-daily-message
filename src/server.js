@@ -253,7 +253,7 @@ const getDallEImage = async (clientText) => {
     }
 }
 
-const cronJob = new CronJob("1 6 * * *", async function () {
+const cronJob = new CronJob("2 10 * * *", async function () {
     try {
         console.log("Running Cron Job for daily message...");
         let calendarEventCronJob = 'calendar fetch failed';
